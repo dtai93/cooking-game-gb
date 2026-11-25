@@ -2,6 +2,7 @@
 
 let ctx = null;
 let muted = false;
+let armed = false;
 let master = null;
 let tuneTime = 0;
 let nextNote = 0;
@@ -9,8 +10,12 @@ let nextNote = 0;
 const MELODY = [0, 3, 5, 7, 5, 3, 2, 3, 0, 2, 3, 7, 5, 3, 2, 0];
 const ROOT = 220;
 
+export function armAudio() {
+  armed = true;
+}
+
 function audioCtx() {
-  if (muted) return null;
+  if (muted || !armed) return null;
   const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
   if (!AC) return null;
   try {
@@ -20,7 +25,7 @@ function audioCtx() {
       master.gain.value = 0.18;
       master.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     return ctx;
   } catch {
     return null;
@@ -30,21 +35,26 @@ function audioCtx() {
 function tone(freq, dur, type, gain) {
   const ac = audioCtx();
   if (!ac) return;
-  const o = ac.createOscillator();
-  const g = ac.createGain();
-  o.type = type || 'sine';
-  o.frequency.value = freq;
-  g.gain.setValueAtTime(gain || 0.2, ac.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
-  o.connect(g);
-  g.connect(master);
-  o.start();
-  o.stop(ac.currentTime + dur + 0.02);
+  try {
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(gain || 0.2, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    o.connect(g);
+    g.connect(master);
+    o.start();
+    o.stop(ac.currentTime + dur + 0.02);
+  } catch {
+    /* headless or a suspended context */
+  }
 }
 
 function noise(dur, gain, freq) {
   const ac = audioCtx();
   if (!ac) return;
+  try {
   const n = Math.floor(ac.sampleRate * dur);
   const buf = ac.createBuffer(1, n, ac.sampleRate);
   const data = buf.getChannelData(0);
@@ -60,6 +70,9 @@ function noise(dur, gain, freq) {
   filter.connect(g);
   g.connect(master);
   src.start();
+  } catch {
+    /* headless or a suspended context */
+  }
 }
 
 export function setMuted(flag) {

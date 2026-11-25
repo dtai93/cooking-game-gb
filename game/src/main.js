@@ -23,6 +23,25 @@ canvas.width = 1024;
 canvas.height = 640;
 const ctx = canvas.getContext('2d');
 
+function fitCanvas() {
+  const iw = window.innerWidth;
+  const ih = window.innerHeight;
+  if (!iw || !ih) return;
+  const target = 1024 / 640;
+  const close = Math.abs(iw / ih - target) < 0.02;
+  const scale = close ? 1 : Math.min(iw / 1024, ih / 640);
+  const w = close ? iw : Math.floor(1024 * scale);
+  const h = close ? ih : Math.floor(640 * scale);
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  canvas.style.position = 'absolute';
+  canvas.style.left = `${Math.floor((iw - w) / 2)}px`;
+  canvas.style.top = `${Math.floor((ih - h) / 2)}px`;
+}
+
+fitCanvas();
+window.addEventListener('resize', fitCanvas);
+
 function announce(text) {
   status.textContent = text;
 }

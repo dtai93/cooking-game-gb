@@ -201,12 +201,15 @@ export function drawShopScreen(ctx, state) {
   for (let i = 0; i < recipes.length; i += 1) {
     const r = recipes[i];
     const x = 56 + i * 166;
+    const open = NIGHTS.slice(0, state.nightIndex + 1).some((night) => night.recipes.includes(r.id));
+    ctx.globalAlpha = open ? 1 : 0.4;
     drawDish(ctx, { recipeId: r.id }, x + 50, 500, 0.9);
-    inkText(ctx, r.short.toUpperCase(), x + 50, 560, 13, PAL.cream, 'center');
+    ctx.globalAlpha = 1;
+    inkText(ctx, r.short.toUpperCase(), x + 50, 560, 13, open ? PAL.cream : '#8a7060', 'center');
     ctx.font = '12px "Trebuchet MS", "Segoe UI", sans-serif';
-    ctx.fillStyle = '#f0d8b0';
+    ctx.fillStyle = open ? '#f0d8b0' : '#8a7060';
     ctx.textAlign = 'center';
-    ctx.fillText('UNLOCKED', x + 50, 578);
+    ctx.fillText(open ? 'UNLOCKED' : 'LOCKED', x + 50, 578);
   }
   const go = continueRect();
   fillPanel(ctx, go.x, go.y, go.w, go.h, '#c9842a', '#fff1c2');

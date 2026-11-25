@@ -85,13 +85,31 @@ function stageService(state) {
   makeOrder(state, 'coffee', [], 'Lan', 0.42);
   makeOrder(state, 'goicuon', [], 'Bao', 0.86);
   makeOrder(state, 'pho', ['lime', 'chili'], 'Kim', 0.36);
-  pushFloater(state, 650, 400, '+$12 TIP', '#ffd56a');
-  pushFloater(state, 730, 348, 'RUSH x3!', '#ff9a2e');
-  burstParticles(state, 228, 280, '#3aaa45', 8, 'herb');
-  puffSteam(state, 398, 230);
-  puffSteam(state, 640, 420);
   state.nearId = 'chop';
-  run(state, 18, true);
+  run(state, 20, false);
+  state.chop.item = { item: 'herbs', prep: 'raw' };
+  state.chop.progress = 0.58;
+  state.pot.phase = 'cook';
+  state.pot.progress = 0.64;
+  state.grill.phase = 'cook';
+  state.grill.progress = 0.28;
+  state.grill.item = { item: 'pork', prep: 'raw' };
+  state.nightTime = 20;
+  state.combo = 3;
+  state.comboLeft = 6;
+  state.orders[0].patience = 0.74;
+  state.orders[1].patience = 0.58;
+  state.orders[2].patience = 0.42;
+  state.orders[3].patience = 0.86;
+  state.orders[4].patience = 0.36;
+  state.floaters = [];
+  state.particles = [];
+  pushFloater(state, 620, 352, '+$12 TIP', '#ffd56a');
+  pushFloater(state, 710, 318, 'RUSH x3!', '#ff9a2e');
+  burstParticles(state, 210, 268, '#3aaa45', 9, 'herb');
+  puffSteam(state, 398, 230);
+  puffSteam(state, 600, 400);
+  state.nearId = 'chop';
 }
 
 function stageShop(state) {

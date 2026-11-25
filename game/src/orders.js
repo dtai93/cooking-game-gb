@@ -32,7 +32,16 @@ export function tryServePlate(state) {
     pushFloater(state, 640, 430, 'NO PLATE', '#ffd56a');
     return false;
   }
-  const index = state.orders.findIndex((order) => plateMatches(state.plate, order));
+  let index = -1;
+  let best = -1;
+  for (let i = 0; i < state.orders.length; i += 1) {
+    if (!plateMatches(state.plate, state.orders[i])) continue;
+    const steps = orderSteps(state.orders[i]).length;
+    if (steps > best) {
+      best = steps;
+      index = i;
+    }
+  }
   if (index < 0) {
     pushFloater(state, 640, 430, 'NO MATCH', '#ff8a78');
     return false;

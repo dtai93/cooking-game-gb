@@ -67,7 +67,7 @@ export function drawHud(ctx, state) {
 
   const left = state.nightLength - state.nightTime;
   const frac = clamp(left / state.nightLength, 0, 1);
-  inkText(ctx, 'LANTERN', 512, 20, 11, PAL.gold, 'center');
+  inkText(ctx, 'NIGHT TIMER', 512, 18, 13, PAL.gold, 'center');
   ctx.fillStyle = '#2a140c';
   roundRect(ctx, 390, 26, 244, 14, 7);
   ctx.fill();
@@ -85,8 +85,8 @@ export function drawHud(ctx, state) {
   else ctx.fillText('COMBO —', 1000, 42);
 
   fillPanel(ctx, 8, 52, 128, 58, 'rgba(28, 14, 10, 0.9)');
-  inkText(ctx, 'ORDER', 72, 76, 14, PAL.gold, 'center');
-  inkText(ctx, 'BOARD', 72, 96, 14, PAL.cream, 'center');
+  inkText(ctx, 'ORDER', 72, 74, 15, PAL.gold, 'center');
+  inkText(ctx, 'BOARD', 72, 94, 15, PAL.cream, 'center');
   const n = state.orders.length;
   const gap = n > 0 ? Math.min(124, (760 - 146) / n) : 124;
   for (let i = 0; i < n; i += 1) ticket(ctx, state, state.orders[i], 146 + i * gap, 52, gap - 6, 58);

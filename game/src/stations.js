@@ -192,6 +192,10 @@ export function useStation(state, id) {
       playThud();
       return;
     }
+    if (state.pot.phase === 'ready' && held) {
+      pushFloater(state, 398, 220, 'HANDS FULL', '#ffd56a');
+      return;
+    }
     if (state.pot.phase === 'cook') pushFloater(state, 398, 220, 'SIMMERING', '#ffd56a');
     return;
   }

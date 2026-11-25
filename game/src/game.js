@@ -7,7 +7,7 @@ import { updateStations, useStation, nearestStation, stationAtPoint, distToStati
 import { updateCustomers, spawnCustomer } from './customers.js';
 import { updateParticles } from './particles.js';
 import { beginNight, finishNight } from './nights.js';
-import { setMuted, updateTune } from './audio.js';
+import { armAudio, setMuted, updateTune } from './audio.js';
 import { buyUpgrade } from './shop.js';
 
 export function createState(seed) {
@@ -91,6 +91,9 @@ export function stepGame(state, dt, input) {
     state.muted = !state.muted;
     setMuted(state.muted);
   }
+  const played = input.pressedInteract || input.pressedConfirm || input.pressedPause
+    || input.clicked || input.left || input.right || input.up || input.down || input.use;
+  if (played) armAudio();
   if (!state.muted) updateTune(dt);
   if (state.screen === 'title' && (input.pressedConfirm || input.pressedInteract)) {
     beginNight(state, state.selectedNight);
@@ -121,8 +124,7 @@ export function stepGame(state, dt, input) {
   if (input.clicked) {
     state.dragItem = null;
     playClick(state, input.clickX, input.clickY);
-  }
-  if (input.drag && !state.dragItem) {
+  } else if (input.drag && !state.dragItem) {
     const from = stationAtPoint(input.drag.x, input.drag.y);
     if (from && from.kind === 'crate') state.dragItem = freshItem(from.item);
   }

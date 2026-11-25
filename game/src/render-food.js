@@ -5,7 +5,8 @@ import { LAYOUT } from './stations.js';
 import { assemblyRatio } from './plating.js';
 import { focusOrder, orderLabel } from './orders.js';
 import { customerLine } from './customers.js';
-import { roundRect, inkText } from './render-kitchen.js';
+import { recipeById, plateMatches } from './recipes.js';
+import { roundRect, inkText, pillLabel } from './render-kitchen.js';
 
 export function drawItemIcon(ctx, id, x, y, s) {
   ctx.save();
@@ -280,8 +281,9 @@ export function drawFood(ctx, state) {
   for (let i = 0; i < LAYOUT.length; i += 1) {
     const s = LAYOUT[i];
     if (s.kind !== 'crate') continue;
-    drawItemIcon(ctx, s.item, s.x + s.w / 2, s.y + 18, 16);
-    inkText(ctx, s.label, s.x + s.w / 2, s.y + s.h + 12, 11, PAL.cream, 'center');
+    const top = s.y < 180;
+    drawItemIcon(ctx, s.item, s.x + s.w / 2, s.y + (top ? 16 : 18), top ? 14 : 16);
+    inkText(ctx, s.label, s.x + s.w / 2, top ? s.y + s.h - 4 : s.y + s.h + 12, 11, PAL.cream, 'center');
   }
   const chop = LAYOUT.find((s) => s.id === 'chop');
   if (state.chop.item) {
@@ -315,8 +317,10 @@ export function drawFood(ctx, state) {
   if (state.assembly.recipeId) {
     const order = focusOrder(state);
     const ratio = assemblyRatio(state, order && order.recipeId === state.assembly.recipeId ? order : null);
-    drawDish(ctx, { recipeId: state.assembly.recipeId, items: state.assembly.items }, asm.x + 78, asm.y + 62, 1.15);
-    inkText(ctx, `${ratio.have}/${ratio.need}`, asm.x + asm.w - 46, asm.y + 78, 22, '#fff6e4', 'center');
+    drawDish(ctx, { recipeId: state.assembly.recipeId, items: state.assembly.items }, asm.x + 70, asm.y + 68, 1.05);
+    const recipe = recipeById(state.assembly.recipeId);
+    const tag = `${(recipe ? recipe.short : 'DISH').toUpperCase()} ${ratio.have}/${ratio.need}`;
+    pillLabel(ctx, tag, asm.x + asm.w - 62, asm.y + 78, 16);
   }
 
   const pass = LAYOUT.find((s) => s.id === 'pass');
@@ -331,16 +335,34 @@ export function drawFood(ctx, state) {
     ctx.ellipse(pass.x + 78, pass.y + 78, 40, 18, 0, 0, 6.2);
     ctx.fill();
     ctx.restore();
-    drawDish(ctx, state.plate, pass.x + 70, pass.y + 64, 1.15);
-    inkText(ctx, 'READY', pass.x + 70, pass.y + 118, 18, '#fff6e4', 'center');
+    drawDish(ctx, state.plate, pass.x + 64, pass.y + 58, 1.05);
+    pillLabel(ctx, 'READY TO SERVE', pass.x + 78, pass.y + 112, 13);
   }
-  const guest = state.orders[0];
+  const guest = (state.plate && state.orders.find((order) => plateMatches(state.plate, order))) || state.orders[0];
   if (guest) {
     drawCustomer(ctx, guest, pass.x + 170, pass.y + 58);
     bubble(ctx, customerLine(guest), pass.x + 8, pass.y - 30);
   }
   if (state.upgrades.cat) drawCat(ctx, 470, 360);
   drawChef(ctx, state.chef);
+  if (state.chop.item && state.chop.item.prep === 'raw' && state.nearId === 'chop') {
+    ctx.save();
+    ctx.translate(state.chef.x + 14, state.chef.y - 8);
+    ctx.rotate(-0.9);
+    ctx.strokeStyle = '#f4f7fb';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(20, -6);
+    ctx.stroke();
+    ctx.strokeStyle = '#8a3a1c';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(-3, 3);
+    ctx.lineTo(5, -1);
+    ctx.stroke();
+    ctx.restore();
+  }
   if (state.dragItem && state.pointer) drawItemIcon(ctx, state.dragItem.item, state.pointer.x, state.pointer.y, 18);
   inkText(ctx, 'SINK', 176, 468, 12, PAL.cream, 'left');
 }

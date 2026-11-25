@@ -23,6 +23,22 @@ export function fillPanel(ctx, x, y, w, h, fill, edge) {
   ctx.stroke();
 }
 
+export function pillLabel(ctx, text, x, y, size) {
+  const px = size || 13;
+  ctx.font = `bold ${px}px "Trebuchet MS", "Segoe UI", sans-serif`;
+  const w = Math.ceil(ctx.measureText(text).width + 18);
+  const h = px + 10;
+  const left = Math.round(x - w / 2);
+  const top = Math.round(y - px - 1);
+  roundRect(ctx, left, top, w, h, 8);
+  ctx.fillStyle = 'rgba(18, 8, 8, 0.92)';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#ffd56a';
+  ctx.stroke();
+  inkText(ctx, text, x, y, px, '#fff6e4', 'center');
+}
+
 export function inkText(ctx, text, x, y, size, color, align) {
   ctx.font = `bold ${size}px "Trebuchet MS", "Segoe UI", sans-serif`;
   ctx.textAlign = align || 'left';
@@ -235,5 +251,5 @@ export function drawKitchen(ctx, state) {
     ctx.fill();
   }
 
-  inkText(ctx, 'INGREDIENTS', 470, 204, 15, PAL.gold, 'center');
+  pillLabel(ctx, 'COUNTER', 468, 198, 14);
 }
