@@ -13,14 +13,18 @@ function audioCtx() {
   if (muted) return null;
   const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
   if (!AC) return null;
-  if (!ctx) {
-    ctx = new AC();
-    master = ctx.createGain();
-    master.gain.value = 0.18;
-    master.connect(ctx.destination);
+  try {
+    if (!ctx) {
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = 0.18;
+      master.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  } catch {
+    return null;
   }
-  if (ctx.state === 'suspended') ctx.resume();
-  return ctx;
 }
 
 function tone(freq, dur, type, gain) {

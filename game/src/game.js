@@ -113,6 +113,7 @@ export function stepGame(state, dt, input) {
     state.screen = 'pause';
     return;
   }
+  state.pointer = { x: input.mx || 0, y: input.my || 0 };
   updateChef(state, dt, input);
   const near = nearestStation(state.chef);
   state.nearId = near ? near.id : null;

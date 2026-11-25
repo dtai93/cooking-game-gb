@@ -43,3 +43,9 @@ config.js layout and nights · ingredients.js · recipes.js · stations.js · ch
 - title: logo, how to play, recipe cards, night select, PLAY.
 - shop: NIGHT 3 CLEARED, stars, upgrade cards, recipe book, CONTINUE.
 - results: victory grade, stats, feats, PLAY AGAIN.
+
+## Session 1
+
+Replaced Block Dodger with a full stall loop: title, six nights, shop, pause, victory, game over. Keyboard and mouse both cook. Service shot is night 4 with five tickets, a 3/5 pho, chop ring, broth ring, and a READY banh mi. Coffee serve, chop, and ladle were script-checked. Four JPEGs captured. `MAKEFUN_OUTPUT_DIR=out node main.ts` writes dossier.json. No console errors on the service shot.
+
+Next sessions: richer food drawing, tighter station routes, and a service autopilot that actually plates a ticket so the rush feels played rather than posed.
