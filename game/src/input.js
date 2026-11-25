@@ -1,53 +1,91 @@
-// Keyboard and pointer input. Held keys give a steering direction; one-shot presses (start or
-// restart, pause) are queued as bit flags and taken once by the loop, so a press between two
-// frames is never lost and never counted twice.
+// Keyboard and mouse. Held keys stay; taps and clicks clear at the end of the frame.
 
-export const ACTION_CONFIRM = 1;
-export const ACTION_PAUSE = 2;
+const KEY_LEFT = ['arrowleft', 'a'];
+const KEY_RIGHT = ['arrowright', 'd'];
+const KEY_UP = ['arrowup', 'w'];
+const KEY_DOWN = ['arrowdown', 's'];
 
-const LEFT = new Set(['ArrowLeft', 'KeyA']);
-const RIGHT = new Set(['ArrowRight', 'KeyD']);
-const CONFIRM = new Set(['Space', 'Enter']);
-const PAUSE = new Set(['KeyP', 'Escape']);
+export function createInput(canvas) {
+  const down = new Set();
+  const input = {
+    left: false, right: false, up: false, down: false, use: false,
+    pressedInteract: false, pressedPause: false, pressedMute: false, pressedConfirm: false,
+    clicked: false, clickX: 0, clickY: 0, mx: 0, my: 0, pointer: false,
+    drag: null, dragEnded: null,
+  };
 
-export function createInput(target) {
-  let left = false;
-  let right = false;
-  let actions = 0;
+  function localPos(event) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    return { x: (event.clientX - rect.left) * sx, y: (event.clientY - rect.top) * sy };
+  }
+
+  function refreshHeld() {
+    input.left = KEY_LEFT.some((k) => down.has(k));
+    input.right = KEY_RIGHT.some((k) => down.has(k));
+    input.up = KEY_UP.some((k) => down.has(k));
+    input.down = KEY_DOWN.some((k) => down.has(k));
+    input.use = down.has('e') || down.has(' ') || input.pointer;
+  }
 
   window.addEventListener('keydown', (event) => {
-    if (LEFT.has(event.code)) left = true;
-    else if (RIGHT.has(event.code)) right = true;
-    else if (CONFIRM.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_CONFIRM;
-    } else if (PAUSE.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_PAUSE;
-    } else return;
-    event.preventDefault();
-  });
-  window.addEventListener('keyup', (event) => {
-    if (LEFT.has(event.code)) left = false;
-    else if (RIGHT.has(event.code)) right = false;
-  });
-  // A key released while the tab is hidden never sends keyup: let go of everything on blur.
-  window.addEventListener('blur', () => {
-    left = false;
-    right = false;
-  });
-  target.addEventListener('pointerdown', () => {
-    actions |= ACTION_CONFIRM;
+    const key = event.key.toLowerCase();
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(key)) event.preventDefault();
+    if (down.has(key)) return;
+    down.add(key);
+    if (key === 'e' || key === ' ') input.pressedInteract = true;
+    if (key === 'p') input.pressedPause = true;
+    if (key === 'm') input.pressedMute = true;
+    if (key === 'enter') input.pressedConfirm = true;
+    refreshHeld();
   });
 
-  return {
-    /** -1 for left, 1 for right, 0 for neither or both. */
-    direction() {
-      return (right ? 1 : 0) - (left ? 1 : 0);
-    },
-    /** The one-shot presses since the last call, as ACTION_* flags. */
-    takeActions() {
-      const taken = actions;
-      actions = 0;
-      return taken;
-    },
+  window.addEventListener('keyup', (event) => {
+    down.delete(event.key.toLowerCase());
+    refreshHeld();
+  });
+
+  canvas.addEventListener('mousemove', (event) => {
+    const p = localPos(event);
+    input.mx = p.x;
+    input.my = p.y;
+  });
+
+  canvas.addEventListener('mousedown', (event) => {
+    const p = localPos(event);
+    input.mx = p.x;
+    input.my = p.y;
+    input.pointer = true;
+    input.drag = { x: p.x, y: p.y };
+    refreshHeld();
+  });
+
+  window.addEventListener('mouseup', (event) => {
+    const p = localPos(event);
+    input.pointer = false;
+    if (input.drag) {
+      const moved = Math.hypot(p.x - input.drag.x, p.y - input.drag.y);
+      if (moved < 8) {
+        input.clicked = true;
+        input.clickX = p.x;
+        input.clickY = p.y;
+      } else {
+        input.dragEnded = { x: p.x, y: p.y, fromX: input.drag.x, fromY: input.drag.y };
+      }
+      input.drag = null;
+    }
+    refreshHeld();
+  });
+
+  input.endFrame = () => {
+    input.pressedInteract = false;
+    input.pressedPause = false;
+    input.pressedMute = false;
+    input.pressedConfirm = false;
+    input.clicked = false;
+    input.dragEnded = null;
   };
+
+  return input;
 }
